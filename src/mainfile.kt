@@ -1,14 +1,13 @@
 import base.Base8
 import base.Base16
 import functors.adder
+import functors.*
 
 fun main(args: Array<String>) {
-    var a = Base16(244)
-    var result = adder(Base8(7), Base16(8), true)
-    println(result.value.value)
-    println(result.S)
-    println(result.Z)
-    println(result.AC)
-    println(result.P)
-    println(result.CY)
+    var a = Base8(0x01)
+    for (i: Int in 0 until 25) {
+        val res = shiftRight(a, false, true)
+        println(" " + res.value.value + ", " + res.serialOut)
+        a = Base8(res.value)
+    }
 }

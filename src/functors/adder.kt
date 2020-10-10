@@ -1,11 +1,9 @@
 package functors
 import base.BaseN
-import base.ArithmeticContext
+import base.context.ArithmeticContext
+
 
 fun adder(a: BaseN, b: BaseN, carryIn: Boolean): ArithmeticContext{
-    var valA: Int = a.value
-    var valB: Int = b.value
-
     check(a.bits == b.bits) {"Adder Error, Incompatible number of bits in both arguments"}
 
     //Convert carryIn to Integer, later to BaseN
