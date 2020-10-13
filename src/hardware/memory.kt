@@ -1,6 +1,8 @@
 package hardware
 import base.Base16
 import base.Base8
+import base.BaseN
+import base.context.ReferenceTo
 
 class Memory {
     val size: Int = 65536
@@ -12,5 +14,12 @@ class Memory {
 
     fun set(addr: Base16, data: Base8) {
         mem[addr.value] = data.value.toShort()
+    }
+}
+
+class MemoryReference(var memory: Memory, val addr: Base16): ReferenceTo(){
+    override fun getVal() = memory.get(addr)
+    override fun setVal(value: BaseN) {
+        memory.set(addr, Base8(value))
     }
 }

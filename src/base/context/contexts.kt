@@ -16,6 +16,11 @@ class ShiftContext(val value: BaseN,
 
 }
 
+abstract class ReferenceTo(){
+    abstract fun getVal(): BaseN
+    abstract fun setVal(value: BaseN): Unit
+}
+
 //May not be used...
 enum class Register {
     a, b, c, d, e, h, l

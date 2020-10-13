@@ -1,7 +1,10 @@
 package hardware
 import base.Base8
 import base.Base16
+import base.BaseN
+import base.context.ReferenceTo
 import hardware.FlagsRegister
+import java.lang.ref.Reference
 
 class RegisterFile {
     var a     = Base8(0)
@@ -37,4 +40,11 @@ class RegisterFile {
     var sp    = Base16(0)
     var pc    = Base16(0)
     var ir    = Base16(0)
+}
+
+class RegisterReference(var reg: BaseN): ReferenceTo() {
+    override fun getVal() = reg
+    override fun setVal(value: BaseN) {
+        reg.value = value.value
+    }
 }

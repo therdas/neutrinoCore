@@ -1,5 +1,4 @@
 package base
-import base.BaseN
 
 class Base8 (x: Int): BaseN(x, 8){
     constructor(a: BaseN): this(a.value) {

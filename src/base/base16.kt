@@ -1,5 +1,4 @@
 package base
-import base.BaseN
 
 class Base16 (x: Int): BaseN(x, 16){
     constructor(a: BaseN): this(a.value) {
@@ -7,4 +6,18 @@ class Base16 (x: Int): BaseN(x, 16){
     }
 
     constructor(a: Base8, b: Base8): this((a.value shl 8) + b.value)
+
+    var upper
+        get() = Base8(value and 0xFF00)
+        set(x: Base8) {
+            value = value and 0x00FF
+            value += (x.value shl 8)
+        }
+
+    var lower
+        get() = Base8(value and 0x00FF)
+        set(x: Base8) {
+            value = value and 0xFF00
+            value += x.value
+        }
 }
