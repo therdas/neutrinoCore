@@ -3,39 +3,22 @@ import base.Base16
 import base.BaseN
 
 class ArithmeticContext(val value: BaseN,
-              val S: Boolean,
-              val Z: Boolean,
-              val AC: Boolean,
-              val P: Boolean,
-              val CY:Boolean) {
-
-}
+                        var S: Boolean,
+                        var Z: Boolean,
+                        var AC: Boolean,
+                        var P: Boolean,
+                        var CY:Boolean)
 
 class ShiftContext(val value: BaseN,
                    val serialOut: Boolean) {
 
 }
-
-abstract class ReferenceTo(){
-    abstract fun getVal(): BaseN
-    abstract fun setVal(value: BaseN): Unit
-}
-
-//May not be used...
-enum class Register {
-    a, b, c, d, e, h, l
-}
-
-enum class RegisterPair {
-    psw, bc, de, hl, sp, pc, ir
-}
-
-class RegisterContext(val value: BaseN,
-                      val register: Register) {
-
-}
-
-class RegisterPairContext(val value: Base16,
-                          val registerPair: RegisterPair) {
-
+/*
+** A reference to a given object, wether atomic or part of a
+** nother representation. getVal and setVal MUST modify it in
+** whereever it was declared.
+ */
+interface ReferenceTo {
+    fun getVal(): BaseN
+    fun setVal(value: BaseN): Unit
 }

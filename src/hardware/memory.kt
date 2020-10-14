@@ -17,7 +17,7 @@ class Memory {
     }
 }
 
-class MemoryReference(var memory: Memory, val addr: Base16): ReferenceTo(){
+class MemoryReference(var memory: Memory, val addr: Base16): ReferenceTo{
     override fun getVal() = memory.get(addr)
     override fun setVal(value: BaseN) {
         memory.set(addr, Base8(value))

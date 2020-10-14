@@ -2,6 +2,7 @@ package hardware
 
 import base.Base8
 import base.BaseN
+import base.context.ArithmeticContext
 import base.context.ReferenceTo
 
 class FlagsRegister {
@@ -35,9 +36,17 @@ class FlagsRegister {
         p  = (a.value and 0x04) > 0
         cy  = (a.value and 0x01) > 0
     }
+
+    fun fromContext(a: ArithmeticContext) {
+        s  = a.S
+        z  = a.Z
+        ac = a.AC
+        p  = a.P
+        cy = a.CY
+    }
 }
 
-class FlagReference(var flag: FlagsRegister) : ReferenceTo() {
+class FlagReference(var flag: FlagsRegister) : ReferenceTo {
     override fun getVal() = flag.toBase8()
     override fun setVal(value: BaseN): Unit {
         flag.fromBase8(Base8(value))

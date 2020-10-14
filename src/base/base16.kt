@@ -1,5 +1,7 @@
 package base
 
+import base.context.ReferenceTo
+
 class Base16 (x: Int): BaseN(x, 16){
     constructor(a: BaseN): this(a.value) {
         assert(a.bits == 16) {"Cannot cast non double BaseN to Base8"}
@@ -20,4 +22,12 @@ class Base16 (x: Int): BaseN(x, 16){
             value = value and 0xFF00
             value += x.value
         }
+}
+
+class Base16Reference(private var _value: Base16): ReferenceTo {
+    override fun setVal(value: BaseN) {
+        _value =  Base16(value)
+    }
+
+    override fun getVal(): BaseN = _value
 }

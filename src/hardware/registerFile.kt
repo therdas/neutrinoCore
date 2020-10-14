@@ -42,7 +42,7 @@ class RegisterFile {
     var ir    = Base16(0)
 }
 
-class RegisterReference(var reg: BaseN): ReferenceTo() {
+class RegisterReference(var reg: BaseN): ReferenceTo {
     override fun getVal() = reg
     override fun setVal(value: BaseN) {
         reg.value = value.value
