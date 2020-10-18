@@ -1,5 +1,6 @@
 package base
 
+import base.context.ReferenceTo
 import kotlin.math.pow
 
 open class BaseN(x: Int, _bits: Int) {
@@ -20,12 +21,12 @@ open class BaseN(x: Int, _bits: Int) {
         value = x
     }
 
-    operator fun plus(increment: BaseN): BaseN {
-        return BaseN(value + increment.value, bits)
+    operator fun plus(increment: Int): BaseN {
+        return BaseN(value + increment, bits)
     }
 
-    operator fun minus(decrement: BaseN): BaseN {
-        return BaseN(value + decrement.value, bits)
+    operator fun minus(decrement: Int): BaseN {
+        return BaseN(value + decrement, bits)
     }
 
     operator fun inc(): BaseN {
@@ -42,7 +43,7 @@ open class BaseN(x: Int, _bits: Int) {
 
     operator fun unaryMinus(): BaseN {
         var res: Int = value
-        var temp: Int = 0
+        var temp = 0
         for(i: Int in 0 until bits) {
             temp = temp shl 1
             val currentBit = (res and (0b1 shl bits - 1)) shr bits - 1
@@ -71,7 +72,7 @@ open class BaseN(x: Int, _bits: Int) {
 
     fun computeParity(): Boolean {
         var temp:Int = value
-        var parity: Boolean = true      //Assume true parity, as P=1 for AC=0
+        var parity = true      //Assume true parity, as P=1 for AC=0
 
         for(i: Int in 0 until bits) {
             val currentBit = temp and 0b1           //Get last bit
@@ -84,4 +85,12 @@ open class BaseN(x: Int, _bits: Int) {
 
         return parity
     }
+}
+
+class BaseNReference(private var _value: BaseN): ReferenceTo {
+    override fun setVal(value: BaseN) {
+        _value =  value
+    }
+
+    override fun getVal(): BaseN = _value
 }

@@ -11,7 +11,7 @@ class ArithmeticContext(val value: BaseN,
                         var CY:Boolean)
 
 class ShiftContext(val value: BaseN,
-                   val serialOut: Boolean) {
+                   val shiftOut: Boolean) {
 
 }
 /*

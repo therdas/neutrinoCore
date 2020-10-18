@@ -30,7 +30,7 @@ fun adder(a: BaseN, b: BaseN, carryIn: Boolean): ArithmeticContext{
     }
 
     //Calculate Result
-    val result = a + b + BaseN(cIn, a.bits)
+    val result = a + b.value + cIn
     return ArithmeticContext(result,
                              result[result.bits - 1],
                           result.value == 0,

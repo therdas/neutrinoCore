@@ -10,7 +10,7 @@ class Base16 (x: Int): BaseN(x, 16){
     constructor(a: Base8, b: Base8): this((a.value shl 8) + b.value)
 
     var upper
-        get() = Base8(value and 0xFF00)
+        get() = Base8((value and 0xFF00) shr 8)
         set(x: Base8) {
             value = value and 0x00FF
             value += (x.value shl 8)

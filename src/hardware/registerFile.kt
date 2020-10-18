@@ -48,3 +48,13 @@ class RegisterReference(var reg: BaseN): ReferenceTo {
         reg.value = value.value
     }
 }
+
+class RegisterPairReference(var h: Base8, var l: Base8): ReferenceTo {
+    override fun getVal() = Base16(h, l)
+    override fun setVal(value: BaseN) {
+        val double = Base16(value)
+        println(":>" + double.value + ":>< " + double.upper.value)
+        h.value = double.upper.value
+        l.value = double.lower.value
+    }
+}
