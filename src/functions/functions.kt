@@ -12,10 +12,12 @@ import hardware.DoubleMemoryReference
 import hardware.MemoryReference
 import hardware.RegisterPairReference
 import hardware.RegisterReference
+import sun.java2d.pipe.RegionIterator
 import sun.java2d.pipe.RegionSpanIterator
 import java.lang.management.MemoryType
 
 fun dummy(instr: Base8, a: BaseN) = true
+infix fun Int.between (range: Pair<Int, Int>) = (this >= range.first) && (this <= range.second)
 
 //74 Functions for 74 Instructions
 fun iACI(instr: Base8, arg: BaseN): Boolean = fAddWC8(reg.flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
@@ -112,7 +114,99 @@ fun iCMP(instr: Base8, arg: BaseN): Boolean {
     return fCompare(flags, RegisterReference(reg.a), source)
 }
 fun iCMI(instr: Base8, arg: BaseN): Boolean = fCompare(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
+fun iDAA(instr: Base8, arg: BaseN): Boolean = fDecimaladjust(flags, RegisterReference(reg.a))
 
+fun iDAD(instr: Base8, arg: BaseN): Boolean {
+    val addend = when(instr.value) {
+        0x09 -> RegisterPairReference(reg.b, reg.c)
+        0x19 -> RegisterPairReference(reg.d, reg.e)
+        0x29 -> RegisterPairReference(reg.h, reg.l)
+        0x39 -> RegisterReference(reg.sp)
+        else -> return false
+    }
+    return fAdd16(flags, RegisterPairReference(reg.h, reg.l), addend)
+}
+
+fun iDCR(instr: Base8, arg: BaseN): Boolean {
+    val target = when(instr.value) {
+        0x3D -> RegisterReference(reg.a)
+        0x05 -> RegisterReference(reg.b)
+        0x0D -> RegisterReference(reg.c)
+        0x15 -> RegisterReference(reg.d)
+        0x1D -> RegisterReference(reg.e)
+        0x25 -> RegisterReference(reg.h)
+        0x2D -> RegisterReference(reg.l)
+        0x35 -> MemoryReference(memory, reg.hl)
+        else -> return false
+    }
+    return fIdr(flags, target, Base8(0x01).twosComplement())
+}
+
+fun iDCX(instr: Base8, arg: BaseN): Boolean {
+    val target = when(instr.value) {
+        0x0B -> RegisterPairReference(reg.b, reg.c)
+        0x1B -> RegisterPairReference(reg.d, reg.e)
+        0x2B -> RegisterPairReference(reg.h, reg.l)
+        0x3B -> RegisterReference(reg.sp)
+        else -> return false
+    }
+    return fIdx(flags, target, Base16(0x0001).twosComplement())
+}
+
+fun iINR(instr: Base8, arg: BaseN): Boolean {
+    val target = when(instr.value) {
+        0x3C -> RegisterReference(reg.a)
+        0x04 -> RegisterReference(reg.b)
+        0x0C -> RegisterReference(reg.c)
+        0x14 -> RegisterReference(reg.d)
+        0x1C -> RegisterReference(reg.e)
+        0x24 -> RegisterReference(reg.h)
+        0x2C -> RegisterReference(reg.l)
+        0x34 -> MemoryReference(memory, reg.hl)
+        else -> return false
+    }
+    return fIdr(flags, target, Base8(0x01))
+}
+
+fun iINX(instr: Base8, arg: BaseN): Boolean {
+    val target = when(instr.value) {
+        0x03 -> RegisterPairReference(reg.b, reg.c)
+        0x13 -> RegisterPairReference(reg.d, reg.e)
+        0x23 -> RegisterPairReference(reg.h, reg.l)
+        0x33 -> RegisterReference(reg.sp)
+        else -> return false
+    }
+    return fIdx(flags, target, Base16(0x0001))
+}
+
+fun iJMP(instr: Base8, arg: BaseN): Boolean {
+    val cond = when(instr.value) {
+        0xC2 -> !flags.z
+        0xC3 -> true
+        0xCA -> flags.z
+        0xD2 -> !flags.cy
+        0xDA -> flags.cy
+        0xE2 -> !flags.p
+        0xEA -> flags.p
+        0xF2 -> !flags.s
+        0xFA -> flags.s
+        else -> return false
+    }
+
+    return fCondJump(flags, RegisterReference(reg.pc), Base16(arg), cond)
+}
+
+fun iLDA(instr: Base8, arg: BaseN): Boolean = fMov(RegisterReference(reg.a), MemoryReference(memory, Base16(arg)))
+fun iLDAX(instr: Base8, arg: BaseN): Boolean {
+    val source = when(instr.value) {
+        0x0A -> RegisterPairReference(reg.b, reg.c)
+        0x1A -> RegisterPairReference(reg.d, reg.e)
+        else -> return false
+    }
+
+    return fMov(RegisterReference(reg.a), MemoryReference(memory, Base16(source.getVal())))
+}
+fun iLHLD(instr: Base8, arg: BaseN): Boolean = fMov(RegisterPairReference(reg.h, reg.l), Base16Reference(Base16(arg)))
 fun iLXI(instr: Base8, arg: BaseN): Boolean {
     val value = Base16(arg)
     val destination = when(instr.value) {
@@ -124,4 +218,27 @@ fun iLXI(instr: Base8, arg: BaseN): Boolean {
     }
     return fMov(destination, Base16Reference(value))
 }
+fun iMOV(instr: Base8, arg: BaseN): Boolean {
+    val lower = instr.value and 0x0F
+    val source = when(instr.value and 0x0F) {
+        0xF, 0x7 -> RegisterReference(reg.a)
+        0x8, 0x0 -> RegisterReference(reg.b)
+        0x9, 0x1 -> RegisterReference(reg.c)
+        0xA, 0x2 -> RegisterReference(reg.d)
+        0xB, 0x3 -> RegisterReference(reg.e)
+        0xC, 0x4 -> RegisterReference(reg.h)
+        0xD, 0x5 -> RegisterReference(reg.l)
+        0xF, 0x6 -> MemoryReference(memory, reg.hl)
+        else     -> return false
+    }
 
+    val dest = when(instr.value and 0xF0) {
+        0x70 -> if(lower between Pair(0x0, 0x7)) MemoryReference(memory, reg.hl) else RegisterReference(reg.a)
+        0x60 -> if(lower between Pair(0x0, 0x7)) RegisterReference(reg.h)        else RegisterReference(reg.l)
+        0x50 -> if(lower between Pair(0x0, 0x7)) RegisterReference(reg.d)        else RegisterReference(reg.e)
+        0x40 -> if(lower between Pair(0x0, 0x7)) RegisterReference(reg.b)        else RegisterReference(reg.c)
+        else -> return false
+    }
+
+    return fMov(dest, source)
+}

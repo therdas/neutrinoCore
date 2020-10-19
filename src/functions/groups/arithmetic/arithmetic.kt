@@ -1,11 +1,14 @@
 package functions.groups.arithmetic
 
 import base.Base8
+import base.BaseN
 import base.context.ArithmeticContext
 import base.context.ReferenceTo
 import functors.adder
 import hardware.FlagsRegister
+import hardware.RegisterPairReference
 import hardware.RegisterReference
+import java.util.concurrent.atomic.DoubleAdder
 
 //context = (accumulator, register/memory)
 fun fAdd8(flags: FlagsRegister, augend: ReferenceTo, addend: ReferenceTo): Boolean {
@@ -21,6 +24,16 @@ fun fAddWC8(flags: FlagsRegister, augend: ReferenceTo, addend: ReferenceTo): Boo
     val result = adder(addend.getVal(), augend.getVal(), flags.cy)
     augend.setVal(result.value)
     flags.fromContext(result)
+
+    return true
+}
+
+//HAS to be ReferenceTo as addend may be RegisterReference(reg.sp)
+fun fAdd16(flags: FlagsRegister, augend: ReferenceTo, addend: ReferenceTo): Boolean {
+    val result = adder(augend.getVal(), addend.getVal(), false)
+
+    augend.setVal(result.value)
+    flags.cy = result.CY
 
     return true
 }
@@ -46,13 +59,8 @@ fun fSubWB8(flags: FlagsRegister,  minuend: ReferenceTo, subtrahend: ReferenceTo
 }
 
 //context = (accumulator, register/memory)
-fun fIdr(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 2)
-        return false
-
-    val operand = context[0]
-    var factor  = context[1]
-    val result = adder(operand.getVal(), factor.getVal(), false)
+fun fIdr(flags: FlagsRegister, operand: ReferenceTo, factor: BaseN): Boolean {
+    val result = adder(operand.getVal(), factor, false)
 
     result.CY = flags.cy
 
@@ -62,32 +70,9 @@ fun fIdr(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
 }
 
 //context = (accumulator, register/memory)
-fun fIdx(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 2)
-        return false
-
-    val operand = context[0]
-    val factor  = context[1]
-    val result = adder(operand.getVal(), factor.getVal(), false)
-
-    result.CY = flags.cy
-
+fun fIdx(flags: FlagsRegister, operand: ReferenceTo, factor: BaseN): Boolean {
+    val result = adder(operand.getVal(), factor, false)
     operand.setVal(result.value)
-    flags.fromContext(result)
-    return true
-}
-
-fun fAdd16(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 2)
-        return false
-
-    val augend = context[0]
-    val addend = context[1]
-    val result = adder(augend.getVal(), addend.getVal(), false)
-
-    augend.setVal(result.value)
-    flags.cy = result.CY
-
     return true
 }
 

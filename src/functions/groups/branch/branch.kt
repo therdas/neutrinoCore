@@ -15,14 +15,13 @@ import sun.plugin2.os.windows.FLASHWINFO
 *  a uniform call convention for all functions, which Do require flags
  */
 
-fun fCondJump(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 3)
-        return false;
-    val pc = context[0]
-    val addr = context[3]
-    val cond = context[4].getVal().value > 0
+fun fCondJump(flags: FlagsRegister,
+              pc: RegisterReference,
+              addr: Base16,
+              cond: Boolean): Boolean {
+
     if(cond)
-        pc.setVal(addr.getVal())
+        pc.setVal(addr)
 
     return true
 }
