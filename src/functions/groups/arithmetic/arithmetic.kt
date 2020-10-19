@@ -5,14 +5,10 @@ import base.context.ArithmeticContext
 import base.context.ReferenceTo
 import functors.adder
 import hardware.FlagsRegister
+import hardware.RegisterReference
 
 //context = (accumulator, register/memory)
-fun fAdd8(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 2)
-        return false
-
-    val augend = context[0]
-    val addend = context[1]
+fun fAdd8(flags: FlagsRegister, augend: ReferenceTo, addend: ReferenceTo): Boolean {
     val result = adder(addend.getVal(), augend.getVal(), false)
     augend.setVal(result.value)
     flags.fromContext(result)
@@ -21,12 +17,7 @@ fun fAdd8(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
 }
 
 //context = (accumulator, register/memory)
-fun fAddWC8(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 2)
-        return false
-
-    val augend = context[0]
-    val addend = context[1]
+fun fAddWC8(flags: FlagsRegister, augend: ReferenceTo, addend: ReferenceTo): Boolean {
     val result = adder(addend.getVal(), augend.getVal(), flags.cy)
     augend.setVal(result.value)
     flags.fromContext(result)
@@ -35,12 +26,7 @@ fun fAddWC8(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
 }
 
 //context = (accumulator, register/memory)
-fun fSub8(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 2)
-        return false
-
-    val minuend = context[0]
-    val subtrahend = context[1]
+fun fSub8(flags: FlagsRegister, minuend: ReferenceTo, subtrahend: ReferenceTo): Boolean {
     val result = adder(minuend.getVal(), -(subtrahend.getVal()), true)
     minuend.setVal(result.value)
     result.S = !result.S
@@ -50,12 +36,7 @@ fun fSub8(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
 }
 
 //context = (accumulator, register/memory)
-fun fSubWB8(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 2)
-        return false
-
-    val minuend = context[0]
-    val subtrahend = context[1]
+fun fSubWB8(flags: FlagsRegister,  minuend: ReferenceTo, subtrahend: ReferenceTo): Boolean {
     val result = adder(minuend.getVal(), -(subtrahend.getVal()), !flags.cy)
     minuend.setVal(result.value)
     result.S = !result.S
@@ -110,9 +91,7 @@ fun fAdd16(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
     return true
 }
 
-fun fDecimaladjust(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 1)
-        return false
+fun fDecimaladjust(flags: FlagsRegister, target: RegisterReference): Boolean {
 
     /* Intel Documentation:
     IF 64-Bit Mode
@@ -139,7 +118,6 @@ fun fDecimaladjust(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
 	        FI;
 	FI;
      */
-    val target = context[0]
     val oldData = target.getVal().value
     val oldAC = flags.ac
     val oldCY = flags.cy

@@ -9,7 +9,7 @@ import functions.groups.shift.*
 import functions.groups.stack.*
 import hardware.*
 import jdk.nashorn.internal.ir.Flags
-
+//Summer19
 //You have to kickstart the module first
 var reg = RegisterFile()
 var flags = reg.flags
@@ -21,54 +21,54 @@ fun initFunctionsLibrary(r: RegisterFile, m: Memory) {
 }
 
 val functionMap: Map<Int, (Base8, BaseN) -> Boolean> = mapOf(
-        /*ACI 8-bit*/   0xCE to ::dummy,
-        /*ADC A*/       0x8F to ::dummy,
-        /*ADC B*/       0x88 to ::dummy,
-        /*ADC C*/       0x89 to ::dummy,
-        /*ADC D*/       0x8A to ::dummy,
-        /*ADC E*/       0x8B to ::dummy,
-        /*ADC H*/       0x8C to ::dummy,
-        /*ADC L*/       0x8D to ::dummy,
-        /*ADC M*/       0x8E to ::dummy,
-        /*ADD A*/       0x87 to ::dummy,
-        /*ADD B*/       0x80 to ::dummy,
-        /*ADD C*/       0x81 to ::dummy,
-        /*ADD D*/       0x82 to ::dummy,
-        /*ADD E*/       0x83 to ::dummy,
-        /*ADD H*/       0x84 to ::dummy,
-        /*ADD L*/       0x85 to ::dummy,
-        /*ADD M*/       0x86 to ::dummy,
-        /*ADI 8-bit*/   0xC6 to ::dummy,
-        /*ANA A*/       0xA7 to ::dummy,
-        /*ANA B*/       0xA0 to ::dummy,
-        /*ANA C*/       0xA1 to ::dummy,
-        /*ANA D*/       0xA2 to ::dummy,
-        /*ANA E*/       0xA3 to ::dummy,
-        /*ANA H*/       0xA4 to ::dummy,
-        /*ANA L*/       0xA5 to ::dummy,
-        /*ANA M*/       0xA6 to ::dummy,
-        /*ANI 8-bit*/   0xE6 to ::dummy,
-        /*CALL 16-bit*/ 0xCD to ::dummy,
-        /*CC 16-bit*/   0xDC to ::dummy,
-        /*CM 16-bit*/   0xFC to ::dummy,
-        /*CMA*/         0x2F to ::dummy,
-        /*CMC*/         0x3F to ::dummy,
-        /*CMP A*/       0xBF to ::dummy,
-        /*CMP B*/       0xB8 to ::dummy,
-        /*CMP C*/       0xB9 to ::dummy,
-        /*CMP D*/       0xBA to ::dummy,
-        /*CMP E*/       0xBB to ::dummy,
-        /*CMP H*/       0xBC to ::dummy,
-        /*CMP L*/       0xBD to ::dummy,
-        /*CMP M*/       0xBE to ::dummy,
-        /*CNC 16-bit*/  0xD4 to ::dummy,
-        /*CNZ 16-bit*/  0xC4 to ::dummy,
-        /*CP 16-bit*/   0xF4 to ::dummy,
-        /*CPE 16-bit*/  0xEC to ::dummy,
-        /*CPI 8-bit*/   0xFE to ::dummy,
-        /*CPO 16-bit*/  0xE4 to ::dummy,
-        /*CZ 16-bit*/   0xCC to ::dummy,
-        /*DAA*/         0x27 to ::dummy,
+        /*ACI 8-bit*/   0xCE to ::iACI,
+        /*ADC A*/       0x8F to ::iADC,
+        /*ADC B*/       0x88 to ::iADC,
+        /*ADC C*/       0x89 to ::iADC,
+        /*ADC D*/       0x8A to ::iADC,
+        /*ADC E*/       0x8B to ::iADC,
+        /*ADC H*/       0x8C to ::iADC,
+        /*ADC L*/       0x8D to ::iADC,
+        /*ADC M*/       0x8E to ::iADC,
+        /*ADD A*/       0x87 to ::iADD,
+        /*ADD B*/       0x80 to ::iADD,
+        /*ADD C*/       0x81 to ::iADD,
+        /*ADD D*/       0x82 to ::iADD,
+        /*ADD E*/       0x83 to ::iADD,
+        /*ADD H*/       0x84 to ::iADD,
+        /*ADD L*/       0x85 to ::iADD,
+        /*ADD M*/       0x86 to ::iADD,
+        /*ADI 8-bit*/   0xC6 to ::iADI,
+        /*ANA A*/       0xA7 to ::iANA,
+        /*ANA B*/       0xA0 to ::iANA,
+        /*ANA C*/       0xA1 to ::iANA,
+        /*ANA D*/       0xA2 to ::iANA,
+        /*ANA E*/       0xA3 to ::iANA,
+        /*ANA H*/       0xA4 to ::iANA,
+        /*ANA L*/       0xA5 to ::iANA,
+        /*ANA M*/       0xA6 to ::iANA,
+        /*ANI 8-bit*/   0xE6 to ::iANI,
+        /*CALL 16-bit*/ 0xCD to ::iCALLX,
+        /*CC 16-bit*/   0xDC to ::iCALLX,
+        /*CM 16-bit*/   0xFC to ::iCALLX,
+        /*CMA*/         0x2F to ::iCMA,
+        /*CMC*/         0x3F to ::iCMC,
+        /*CMP A*/       0xBF to ::iCMP,
+        /*CMP B*/       0xB8 to ::iCMP,
+        /*CMP C*/       0xB9 to ::iCMP,
+        /*CMP D*/       0xBA to ::iCMP,
+        /*CMP E*/       0xBB to ::iCMP,
+        /*CMP H*/       0xBC to ::iCMP,
+        /*CMP L*/       0xBD to ::iCMP,
+        /*CMP M*/       0xBE to ::iCMP,
+        /*CNC 16-bit*/  0xD4 to ::iCALLX,
+        /*CNZ 16-bit*/  0xC4 to ::iCALLX,
+        /*CP 16-bit*/   0xF4 to ::iCALLX,
+        /*CPE 16-bit*/  0xEC to ::iCALLX,
+        /*CPI 8-bit*/   0xFE to ::iCMI,
+        /*CPO 16-bit*/  0xE4 to ::iCALLX,
+        /*CZ 16-bit*/   0xCC to ::iCALLX,
+        /*DAA*/         0x27 to { instr, arg -> fDecimaladjust(flags, RegisterReference(reg.a)) },
         /*DAD B*/       0x09 to ::dummy,
         /*DAD D*/       0x19 to ::dummy,
         /*DAD H*/       0x29 to ::dummy,
@@ -117,7 +117,7 @@ val functionMap: Map<Int, (Base8, BaseN) -> Boolean> = mapOf(
         /*LXI B 16-bit*/0x01 to ::iLXI,
         /*LXI D*/       0x11 to ::iLXI,
         /*LXI H 16-bit*/0x21 to ::iLXI,
-       /*LXI SP 16-bit*/0x31 to ::iLXI,
+        /*LXI SP 16-bit*/0x31 to ::iLXI,
         /*MOV A A*/     0x7F to ::dummy,
         /*MOV A B*/     0x78 to ::dummy,
         /*MOV A C*/     0x79 to ::dummy,
@@ -268,18 +268,3 @@ val functionMap: Map<Int, (Base8, BaseN) -> Boolean> = mapOf(
         /*XRI 8-bit*/   0xEE to ::dummy,
         /*XTHL*/        0xE3 to ::dummy
 )
-
-fun dummy(instr: Base8, a: BaseN) = true
-
-//74 Functions for 74 Instructions
-fun iLXI(instr: Base8, arg: BaseN): Boolean {
-    val value = Base16(arg)
-    val destination = when(instr.value) {
-        0x01 -> RegisterPairReference(reg.b, reg.c)
-        0x11 -> RegisterPairReference(reg.d, reg.e)
-        0x21 -> RegisterPairReference(reg.h, reg.l)
-        0x31 -> RegisterReference(reg.sp)
-        else -> return false
-    }
-    return fMov(destination, Base16Reference(value))
-}

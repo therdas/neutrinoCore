@@ -7,10 +7,7 @@ import hardware.FlagsRegister
 
 /* Call convention: (flags, [source, dest])
  */
-fun fAnd(flags: FlagsRegister, context: List<ReferenceTo>):Boolean {
-    val source = context[0]
-    val dest   = context[1]
-
+fun fAnd(flags: FlagsRegister, dest: ReferenceTo, source: ReferenceTo):Boolean {
     val res    = applyLogical(source.getVal(), dest.getVal(), ::And)
     source.setVal(res.value)
     flags.fromContext(res)
@@ -19,10 +16,7 @@ fun fAnd(flags: FlagsRegister, context: List<ReferenceTo>):Boolean {
 
 /* Call convention: (flags, [source, dest])
  */
-fun fOr(flags: FlagsRegister, context: List<ReferenceTo>):Boolean {
-    val source = context[0]
-    val dest   = context[1]
-
+fun fOr(flags: FlagsRegister, dest: ReferenceTo, source: ReferenceTo):Boolean {
     val res    = applyLogical(source.getVal(), dest.getVal(), ::Or)
     source.setVal(res.value)
     flags.fromContext(res)
@@ -31,10 +25,7 @@ fun fOr(flags: FlagsRegister, context: List<ReferenceTo>):Boolean {
 
 /* Call convention: (flags, [source, dest])
  */
-fun fXor(flags: FlagsRegister, context: List<ReferenceTo>):Boolean {
-    val source = context[0]
-    val dest   = context[1]
-
+fun fXor(flags: FlagsRegister, dest: ReferenceTo, source: ReferenceTo):Boolean {
     val res    = applyLogical(source.getVal(), dest.getVal(), ::Xor)
     source.setVal(res.value)
     flags.fromContext(res)
@@ -43,21 +34,19 @@ fun fXor(flags: FlagsRegister, context: List<ReferenceTo>):Boolean {
 
 /* Call convention: (flags, [source, dest])
  */
-fun fNot(flags: FlagsRegister, context: List<ReferenceTo>):Boolean {
-    val source = context[0]
-
+fun fNot(source: ReferenceTo):Boolean {
     val res    = applyLogical(source.getVal(), Not)
     source.setVal(res.value)
     return true
 }
 
-fun fChangeCarry(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    flags.cy = context[0].getVal().value > 0
+fun fChangeCarry(flags: FlagsRegister, bin: Boolean): Boolean {
+    flags.cy = bin
     return true
 }
 
-fun fCompare(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    val res = adder(context[0].getVal(), context[1].getVal().twosComplement(), false)
+fun fCompare(flags: FlagsRegister, dest: ReferenceTo, source: ReferenceTo): Boolean {
+    val res = adder(dest.getVal(), source.getVal().twosComplement(), false)
     res.S = !res.S
     flags.fromContext(res)
     return true
