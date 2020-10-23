@@ -14,9 +14,10 @@ import hardware.RegisterPairReference
 import hardware.RegisterReference
 import sun.java2d.pipe.RegionIterator
 import sun.java2d.pipe.RegionSpanIterator
+import sun.net.RegisteredDomain
 import java.lang.management.MemoryType
 
-fun dummy(instr: Base8, a: BaseN) = true
+fun dummyFunction(instr: Base8, a: BaseN) = true
 infix fun Int.between (range: Pair<Int, Int>) = (this >= range.first) && (this <= range.second)
 
 //74 Functions for 74 Instructions
@@ -242,3 +243,37 @@ fun iMOV(instr: Base8, arg: BaseN): Boolean {
 
     return fMov(dest, source)
 }
+
+fun iMVI(instr: Base8, arg: BaseN): Boolean {
+    val dest  = when(instr.value) {
+        0x3E -> RegisterReference(reg.a)
+        0x06 -> RegisterReference(reg.b)
+        0x0E -> RegisterReference(reg.c)
+        0x16 -> RegisterReference(reg.d)
+        0x1E -> RegisterReference(reg.e)
+        0x26 -> RegisterReference(reg.h)
+        0x2E -> RegisterReference(reg.l)
+        0x36 -> MemoryReference(memory, reg.hl)
+        else -> return false
+    }
+
+    return fMov(dest, Base8Reference(Base8(arg)))
+}
+
+fun iORA(instr: Base8, arg: BaseN): Boolean {
+    val operand = when(instr.value) {
+        0xB7 -> RegisterReference(reg.a)
+        0xB0 -> RegisterReference(reg.b)
+        0xB1 -> RegisterReference(reg.c)
+        0xB2 -> RegisterReference(reg.d)
+        0xB3 -> RegisterReference(reg.e)
+        0xB4 -> RegisterReference(reg.h)
+        0xB5 -> RegisterReference(reg.l)
+        0xB6 -> MemoryReference(memory, reg.hl)
+        else -> return false
+    }
+
+    return fOr(flags, RegisterReference(reg.a), operand)
+}
+
+fun iORI(instr: Base8, arg: BaseN): Boolean = fOr(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
