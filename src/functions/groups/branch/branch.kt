@@ -47,14 +47,11 @@ fun fCondCall(pc: RegisterReference,
     return true
 }
 
-fun fCondRet(flags: FlagsRegister, context: List<ReferenceTo>): Boolean {
-    if(context.size != 3)
-        return false;
-    val pc = context[0]
-    val sp = context[1]
-    val saveLoc = context[2]
-    val cond = context[4].getVal().value > 0
-
+fun fCondRet(pc: RegisterReference,
+             sp: RegisterReference,
+             saveLoc: DoubleMemoryReference,
+             addr: Base16,
+             cond: Boolean): Boolean {
     if(cond) {
         sp.setVal(sp.getVal() + 2)
         pc.setVal(saveLoc.getVal())

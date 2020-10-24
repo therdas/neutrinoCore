@@ -58,3 +58,10 @@ class RegisterPairReference(var h: Base8, var l: Base8): ReferenceTo {
         l.value = double.lower.value
     }
 }
+
+class PSWReference(var a: Base8, var fl: FlagsRegister): ReferenceTo {
+    override fun getVal() = Base16(a, fl.toBase8())
+    override fun setVal(toVal: BaseN) {
+        fl.fromBase8(Base16(toVal).lower); a.value = Base16(toVal).lower.value
+    }
+}

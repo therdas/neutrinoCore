@@ -8,10 +8,9 @@ import functions.groups.dataMovement.*
 import functions.groups.logical.*
 import functors.adder
 import functors.applyLogical
-import hardware.DoubleMemoryReference
-import hardware.MemoryReference
-import hardware.RegisterPairReference
-import hardware.RegisterReference
+import functors.shiftLeft
+import functors.shiftRight
+import hardware.*
 import sun.java2d.pipe.RegionIterator
 import sun.java2d.pipe.RegionSpanIterator
 import sun.net.RegisteredDomain
@@ -277,3 +276,139 @@ fun iORA(instr: Base8, arg: BaseN): Boolean {
 }
 
 fun iORI(instr: Base8, arg: BaseN): Boolean = fOr(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
+fun iPCHL(instr: Base8, arg: BaseN): Boolean = fMov(RegisterReference(reg.pc), RegisterReference(reg.hl))
+fun iPOP(instr: Base8, arg: BaseN): Boolean {
+    val dest = when(instr.value) {
+        0xC1 -> RegisterPairReference(reg.b, reg.c)
+        0xD1 -> RegisterPairReference(reg.d, reg.e)
+        0xE1 -> RegisterPairReference(reg.h, reg.l)
+        0xF1 -> PSWReference(reg.a, reg.flags)
+        else -> return false
+    }
+    val memRef = DoubleMemoryReference(memory, Base16(arg))
+    reg.sp = Base16(reg.sp + 2)
+    return fMov(dest, memRef);
+}
+fun iPUSH(instr: Base8, arg: BaseN): Boolean {
+    val source = when(instr.value) {
+        0xC5 -> RegisterPairReference(reg.b, reg.c)
+        0xD5 -> RegisterPairReference(reg.d, reg.e)
+        0xE5 -> RegisterPairReference(reg.h, reg.l)
+        0xF5 -> PSWReference(reg.a, reg.flags)
+        else -> return false
+    }
+    reg.sp = Base16(reg.sp - 2)
+    val memRef = DoubleMemoryReference(memory, reg.sp)
+    return fMov(memRef, source)
+}
+fun iRAL(instr: Base8, arg: BaseN): Boolean {
+    val res = shiftLeft(reg.a, reg.flags.cy, true)
+    reg.flags.cy = res.shiftOut
+    reg.a.value = res.value.value
+    return true
+}
+fun iRAR(instr: Base8, arg: BaseN): Boolean {
+    val res = shiftRight(reg.a, reg.flags.cy, true)
+    reg.flags.cy = res.shiftOut
+    reg.a.value = res.value.value
+    return true
+}
+fun iRETX(instr: Base8, arg: BaseN):Boolean {
+    val cond = when(instr.value) {
+        0xC9 -> true
+        0xD8 -> reg.flags.cy
+        0xD0 -> !reg.flags.cy
+        0xF8 -> reg.flags.s
+        0xF0 -> !reg.flags.s
+        0xE8 -> reg.flags.p
+        0xE0 -> !reg.flags.p
+        0xC8 -> reg.flags.z
+        0xC0 -> !reg.flags.z
+        else -> return false
+    }
+    return fCondRet(
+            RegisterReference(reg.pc), RegisterReference(reg.sp),
+            DoubleMemoryReference(memory, reg.sp), Base16(arg),
+            cond
+    )
+}
+fun iRLC(instr: Base8, arg: BaseN): Boolean {
+    val res = shiftLeft(reg.a, reg.a[reg.a.bits - 1], true)
+    reg.flags.cy = res.shiftOut
+    reg.a.value = res.value.value
+    return true
+}
+fun iRRC(instr: Base8, arg: BaseN): Boolean {
+    val res = shiftRight(reg.a, reg.a[0], true)
+    reg.flags.cy = res.shiftOut
+    reg.a.value = res.value.value
+    return true
+}
+fun iRST(instr: Base8, arg: BaseN): Boolean {
+    val addr = when(instr.value){
+        0xC7 -> Base16(0x0000)                    //RST-0
+        0xCF -> Base16(0x0008)                    //RST-1
+        0xD7 -> Base16(0x0010)                    //RST-2
+        0xDF -> Base16(0x0018)                    //RST-3
+        0xE7 -> Base16(0x0020)                    //RST-4
+        0xEF -> Base16(0x0028)                    //RST-5
+        0xF7 -> Base16(0x0030)                    //RST-6
+        0xFF -> Base16(0x0038)                    //RST-7
+        else -> return false
+    }
+    return iCALLX(Base8(0xCD), addr)              //Unconditionally call to Page00
+}
+fun iSBB(instr: Base8, arg: BaseN): Boolean {
+    val subtrahend = when(instr.value) {
+        0x9F -> RegisterReference(reg.a)
+        0x98 -> RegisterReference(reg.b)
+        0x99 -> RegisterReference(reg.c)
+        0x9A -> RegisterReference(reg.d)
+        0x9B -> RegisterReference(reg.e)
+        0x9C -> RegisterReference(reg.h)
+        0x9D -> RegisterReference(reg.l)
+        0x9E -> MemoryReference(memory, reg.hl)
+        else -> return false
+    }
+    return fSubWB8(flags, RegisterReference(reg.a), subtrahend)
+}
+fun iSBI(instr: Base8, arg: BaseN): Boolean = fSub8(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
+fun iSTAX(instr: Base8, arg: BaseN):Boolean {
+    var addr = when(instr.value) {
+        0x02 -> reg.bc.value
+        0x12 -> reg.de.value
+        else -> return false
+    }
+    return fMov(MemoryReference(memory, Base16(addr)), RegisterReference(reg.a))
+}
+fun iSUB(instr: Base8, arg: BaseN): Boolean {
+    val subtrahend = when(instr.value) {
+        0x97 -> RegisterReference(reg.a)
+        0x90 -> RegisterReference(reg.b)
+        0x91 -> RegisterReference(reg.c)
+        0x92 -> RegisterReference(reg.d)
+        0x93 -> RegisterReference(reg.e)
+        0x94 -> RegisterReference(reg.h)
+        0x95 -> RegisterReference(reg.l)
+        0x96 -> MemoryReference(memory, reg.hl)
+        else -> return false
+    }
+
+    return fSub8(flags, RegisterReference(reg.a), subtrahend)
+}
+fun iSUI(instr: Base8, arg: BaseN): Boolean = fSubWB8(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
+fun iXRA(instr: Base8, arg: BaseN): Boolean {
+    var with = when(instr.value) {
+        0xAF -> RegisterReference(reg.a)
+        0xA8 -> RegisterReference(reg.b)
+        0xA9 -> RegisterReference(reg.c)
+        0xAA -> RegisterReference(reg.d)
+        0xAB -> RegisterReference(reg.e)
+        0xAC -> RegisterReference(reg.h)
+        0xAD -> RegisterReference(reg.l)
+        0xAE -> MemoryReference(memory, reg.hl)
+        else -> return false
+    }
+    return fXor(flags, RegisterReference(reg.a), with)
+}
+fun iXRI(instr: Base8, arg: BaseN): Boolean = fXor(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
