@@ -373,6 +373,9 @@ fun iSBB(instr: Base8, arg: BaseN): Boolean {
     return fSubWB8(flags, RegisterReference(reg.a), subtrahend)
 }
 fun iSBI(instr: Base8, arg: BaseN): Boolean = fSub8(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
+fun iSHLD(instr: Base8, arg: BaseN): Boolean = fMov(DoubleMemoryReference(memory, Base16(arg)), RegisterPairReference(reg.h, reg.l))
+fun iSPHL(instr: Base8, arg: BaseN): Boolean = fMov(RegisterReference(reg.sp), RegisterPairReference(reg.h, reg.l))
+fun iSTA(instr: Base8, arg: BaseN): Boolean = fMov(MemoryReference(memory, reg.hl), RegisterReference(reg.a))
 fun iSTAX(instr: Base8, arg: BaseN):Boolean {
     var addr = when(instr.value) {
         0x02 -> reg.bc.value
@@ -381,6 +384,7 @@ fun iSTAX(instr: Base8, arg: BaseN):Boolean {
     }
     return fMov(MemoryReference(memory, Base16(addr)), RegisterReference(reg.a))
 }
+fun iSTC(instr: Base8, arg: BaseN): Boolean = fChangeCarry(flags, true)
 fun iSUB(instr: Base8, arg: BaseN): Boolean {
     val subtrahend = when(instr.value) {
         0x97 -> RegisterReference(reg.a)
@@ -397,6 +401,12 @@ fun iSUB(instr: Base8, arg: BaseN): Boolean {
     return fSub8(flags, RegisterReference(reg.a), subtrahend)
 }
 fun iSUI(instr: Base8, arg: BaseN): Boolean = fSubWB8(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
+fun iXCHG(instr: Base8, arg: BaseN):Boolean {
+    val inDE = reg.de.value
+    reg.de.value = reg.hl.value
+    reg.hl.value = inDE
+    return true
+}
 fun iXRA(instr: Base8, arg: BaseN): Boolean {
     var with = when(instr.value) {
         0xAF -> RegisterReference(reg.a)
@@ -412,3 +422,9 @@ fun iXRA(instr: Base8, arg: BaseN): Boolean {
     return fXor(flags, RegisterReference(reg.a), with)
 }
 fun iXRI(instr: Base8, arg: BaseN): Boolean = fXor(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
+fun iXTHL(instr: Base8, arg: BaseN):Boolean {
+    val inHL = reg.hl.value
+    fMov(RegisterPairReference(reg.h, reg.l), DoubleMemoryReference(memory, reg.sp))
+    fMov(DoubleMemoryReference(memory, reg.sp), Base16Reference(Base16(inHL)))
+    return true
+}

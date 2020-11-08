@@ -14,6 +14,20 @@ class Memory(private val size: Int = 65536) {
     fun set(addr: Base16, data: Base8) {
         mem[addr.value] = data.value.toShort()
     }
+
+    fun setArray(toWrite: Array<Pair<Int, Int>>) {
+        for(i in toWrite) {
+            set(Base16(i.first), Base8(i.second))
+        }
+    }
+
+    fun getArray(): Array<Pair<Int, Int>> {
+        val list = mutableListOf<Pair<Int, Int>>()
+        for((index, value) in mem.withIndex())
+            if(value != 0.toShort())
+                list.add(Pair(index, value.toInt()))
+        return list.toTypedArray()
+    }
 }
 
 class MemoryReference(var memory: Memory, val addr: Base16): ReferenceTo{

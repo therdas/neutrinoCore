@@ -20,6 +20,21 @@ fun initFunctionsLibrary(r: RegisterFile, m: Memory) {
     memory = m
 }
 
+fun DispatchFunction(instr: Base8, arg: BaseN): Boolean {
+    val returnValue: Boolean?
+
+    if(!functionMap.containsKey(instr.value))
+        return false
+
+    try{
+        returnValue = functionMap[instr.value]?.invoke(instr, arg)
+    } catch(e: Throwable) {
+        return false
+    }
+
+    return returnValue ?: false
+}
+
 val functionMap: Map<Int, (Base8, BaseN) -> Boolean> = mapOf(
         /*ACI 8-bit*/   0xCE to ::iACI,
         /*ADC A*/       0x8F to ::iADC,
@@ -240,13 +255,13 @@ val functionMap: Map<Int, (Base8, BaseN) -> Boolean> = mapOf(
         /*SBB L*/       0x9D to ::iSBB,
         /*SBB M*/       0x9E to ::iSBB,
         /*SBI 8-bit*/   0xDE to ::iSBI,
-        /*SHLD 16-bit*/ 0x22 to ::dummyFunction,
+        /*SHLD 16-bit*/ 0x22 to ::iSHLD,
         /*SIM*/         0x30 to ::dummyFunction,    //No need to implement... yet.
-        /*SPHL*/        0xF9 to ::dummyFunction,
-        /*STA 16-bit*/  0x32 to ::dummyFunction,
+        /*SPHL*/        0xF9 to ::iSPHL,        //TODO if you do implement SIM, implement a mask reg
+        /*STA 16-bit*/  0x32 to ::iSTA,
         /*STAX B*/      0x02 to ::iSTAX,
         /*STAX D*/      0x12 to ::iSTAX,
-        /*STC*/         0x37 to ::dummyFunction,
+        /*STC*/         0x37 to ::iSTC,
         /*SUB A*/       0x97 to ::iSUB,
         /*SUB B*/       0x90 to ::iSUB,
         /*SUB C*/       0x91 to ::iSUB,
@@ -256,7 +271,7 @@ val functionMap: Map<Int, (Base8, BaseN) -> Boolean> = mapOf(
         /*SUB L*/       0x95 to ::iSUB,
         /*SUB M*/       0x96 to ::iSUB,
         /*SUI 8-bit*/   0xD6 to ::iSUI,
-        /*XCHG*/        0xEB to ::dummyFunction,
+        /*XCHG*/        0xEB to ::iXCHG,
         /*XRA A*/       0xAF to ::iXRA,
         /*XRA B*/       0xA8 to ::iXRA,
         /*XRA C*/       0xA9 to ::iXRA,
@@ -266,5 +281,5 @@ val functionMap: Map<Int, (Base8, BaseN) -> Boolean> = mapOf(
         /*XRA L*/       0xAD to ::iXRA,
         /*XRA M*/       0xAE to ::iXRA,
         /*XRI 8-bit*/   0xEE to ::iXRI,
-        /*XTHL*/        0xE3 to ::dummyFunction
+        /*XTHL*/        0xE3 to ::iXTHL     //TODO Correct return from always true
 )
