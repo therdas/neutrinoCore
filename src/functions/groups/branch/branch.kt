@@ -22,6 +22,7 @@ fun fCondJump(flags: FlagsRegister,
 
     if(cond)
         pc.setVal(addr)
+    println("PC IS " + pc.getVal().value + " SHOULD BE " + addr.value)
 
     return true
 }

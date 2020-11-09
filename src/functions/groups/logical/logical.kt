@@ -47,7 +47,7 @@ fun fChangeCarry(flags: FlagsRegister, bin: Boolean): Boolean {
 
 fun fCompare(flags: FlagsRegister, acc: ReferenceTo, reg: ReferenceTo): Boolean {
     val res = adder(acc.getVal(), reg.getVal().twosComplement(), false)
-    res.S = !res.S
+    res.CY = !res.CY
     flags.fromContext(res)
     return true
 }

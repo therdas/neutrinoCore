@@ -11,6 +11,7 @@ import functors.applyLogical
 import functors.shiftLeft
 import functors.shiftRight
 import hardware.*
+import org.junit.jupiter.params.provider.ValueSource
 import sun.java2d.pipe.RegionIterator
 import sun.java2d.pipe.RegionSpanIterator
 import sun.net.RegisteredDomain
@@ -110,7 +111,7 @@ fun iCMP(instr: Base8, arg: BaseN): Boolean {
         0xBE -> MemoryReference(memory, reg.hl)
         else -> return false
     }
-
+    println("COMPARING " + source.getVal().value + "With" + reg.a.value)
     return fCompare(flags, RegisterReference(reg.a), source)
 }
 fun iCMI(instr: Base8, arg: BaseN): Boolean = fCompare(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
@@ -192,11 +193,17 @@ fun iJMP(instr: Base8, arg: BaseN): Boolean {
         0xFA -> flags.s
         else -> return false
     }
-
-    return fCondJump(flags, RegisterReference(reg.pc), Base16(arg), cond)
+    println("CONDITION IS " + cond.toString())
+    val x = fCondJump(flags, RegisterReference(reg.pc), Base16(arg), cond)
+    println("PC IS NOW " + reg.pc.value)
+    return x
 }
 
-fun iLDA(instr: Base8, arg: BaseN): Boolean = fMov(RegisterReference(reg.a), MemoryReference(memory, Base16(arg)))
+fun iLDA(instr: Base8, arg: BaseN): Boolean {
+    val x = fMov(RegisterReference(reg.a), MemoryReference(memory, Base16(arg)))
+    println("@@@@@@@@@@@@@@@@@@READING A FROM MEMORY......\nSHOULD BE " + reg.a.value + " IS " + memory.get(Base16(arg)).value)
+    return x
+}
 fun iLDAX(instr: Base8, arg: BaseN): Boolean {
     val source = when(instr.value) {
         0x0A -> RegisterPairReference(reg.b, reg.c)
@@ -206,7 +213,7 @@ fun iLDAX(instr: Base8, arg: BaseN): Boolean {
 
     return fMov(RegisterReference(reg.a), MemoryReference(memory, Base16(source.getVal())))
 }
-fun iLHLD(instr: Base8, arg: BaseN): Boolean = fMov(RegisterPairReference(reg.h, reg.l), Base16Reference(Base16(arg)))
+fun iLHLD(instr: Base8, arg: BaseN): Boolean = fMov(RegisterPairReference(reg.h, reg.l), DoubleMemoryReference(memory, Base16(arg)))
 fun iLXI(instr: Base8, arg: BaseN): Boolean {
     val value = Base16(arg)
     val destination = when(instr.value) {
@@ -375,7 +382,7 @@ fun iSBB(instr: Base8, arg: BaseN): Boolean {
 fun iSBI(instr: Base8, arg: BaseN): Boolean = fSub8(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
 fun iSHLD(instr: Base8, arg: BaseN): Boolean = fMov(DoubleMemoryReference(memory, Base16(arg)), RegisterPairReference(reg.h, reg.l))
 fun iSPHL(instr: Base8, arg: BaseN): Boolean = fMov(RegisterReference(reg.sp), RegisterPairReference(reg.h, reg.l))
-fun iSTA(instr: Base8, arg: BaseN): Boolean = fMov(MemoryReference(memory, reg.hl), RegisterReference(reg.a))
+fun iSTA(instr: Base8, arg: BaseN): Boolean = fMov(MemoryReference(memory, Base16(arg)), RegisterReference(reg.a))
 fun iSTAX(instr: Base8, arg: BaseN):Boolean {
     var addr = when(instr.value) {
         0x02 -> reg.bc.value
@@ -403,8 +410,9 @@ fun iSUB(instr: Base8, arg: BaseN): Boolean {
 fun iSUI(instr: Base8, arg: BaseN): Boolean = fSubWB8(flags, RegisterReference(reg.a), Base8Reference(Base8(arg)))
 fun iXCHG(instr: Base8, arg: BaseN):Boolean {
     val inDE = reg.de.value
-    reg.de.value = reg.hl.value
-    reg.hl.value = inDE
+    reg.de = reg.hl
+    reg.hl = Base16(inDE)
+    println("IN DE: " + reg.de.value + " IN HL: " + reg.hl.value)
     return true
 }
 fun iXRA(instr: Base8, arg: BaseN): Boolean {
